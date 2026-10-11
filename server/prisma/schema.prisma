@@ -1,0 +1,94 @@
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  USER
+}
+
+enum SmartCategory {
+  S
+  M
+  A
+  R
+  T
+}
+
+model User {
+  id           String    @id @default(cuid())
+  email        String    @unique
+  passwordHash String
+  name         String
+  role         String    @default("USER") // "ADMIN" or "USER"
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+  attempts     Attempt[]
+}
+
+model Test {
+  id                  String     @id @default(cuid())
+  title               String
+  description         String
+  timeLimitMinutes    Int        @default(15)
+  passingScorePercent Int        @default(70)
+  isPublished         Boolean    @default(true)
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+  questions           Question[]
+  attempts            Attempt[]
+}
+
+model Question {
+  id          String   @id @default(cuid())
+  testId      String
+  test        Test     @relation(fields: [testId], references: [id], onDelete: Cascade)
+  prompt      String
+  category    String   // "S", "M", "A", "R", "T"
+  explanation String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  options     Option[]
+  answers     Answer[]
+}
+
+model Option {
+  id         String   @id @default(cuid())
+  questionId String
+  question   Question @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  text       String
+  isCorrect  Boolean  @default(false)
+  answers    Answer[]
+}
+
+model Attempt {
+  id             String    @id @default(cuid())
+  testId         String
+  test           Test      @relation(fields: [testId], references: [id], onDelete: Cascade)
+  candidateName  String    @default("Student")
+  candidateUsn   String    @default("")
+  userId         String?
+  user           User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  startedAt      DateTime  @default(now())
+  completedAt    DateTime?
+  score          Int?
+  totalQuestions Int
+  passed         Boolean?
+  answers        Answer[]
+}
+
+model Answer {
+  id               String    @id @default(cuid())
+  attemptId        String
+  attempt          Attempt   @relation(fields: [attemptId], references: [id], onDelete: Cascade)
+  questionId       String
+  question         Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  selectedOptionId String?
+  selectedOption   Option?   @relation(fields: [selectedOptionId], references: [id], onDelete: SetNull)
+  isCorrect        Boolean   @default(false)
+}

@@ -1,0 +1,25 @@
+{
+  "name": "smart-goals-mcq-platform",
+  "version": "1.0.0",
+  "description": "Full-stack SMART Goals MCQ Assessment & Admin Portal",
+  "scripts": {
+    "dev:server": "npm --prefix server run dev",
+    "dev:client": "npm --prefix client run dev",
+    "db:push": "npm --prefix server run db:push",
+    "db:seed": "npm --prefix server run db:seed",
+    "build": "npm --prefix client run build"
+  },
+  "keywords": [
+    "smart-goals",
+    "mcq",
+    "assessment",
+    "admin-dashboard",
+    "express",
+    "prisma",
+    "react",
+    "vite",
+    "recharts"
+  ],
+  "author": "",
+  "license": "ISC"
+}
