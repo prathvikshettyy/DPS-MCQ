@@ -2,12 +2,23 @@
   "name": "smart-goals-mcq-platform",
   "version": "1.0.0",
   "description": "Full-stack SMART Goals MCQ Assessment & Admin Portal",
+  "main": "api/index.js",
   "scripts": {
+    "dev": "npm --prefix server run dev",
     "dev:server": "npm --prefix server run dev",
     "dev:client": "npm --prefix client run dev",
-    "db:push": "npm --prefix server run db:push",
-    "db:seed": "npm --prefix server run db:seed",
-    "build": "npm --prefix client run build"
+    "build": "npm --prefix client run build",
+    "vercel-build": "npm --prefix client install && npm --prefix client run build && npx prisma generate --schema=./server/prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@prisma/client": "^6.19.3",
+    "bcryptjs": "^3.0.3",
+    "cookie-parser": "^1.4.7",
+    "cors": "^2.8.6",
+    "dotenv": "^18.0.7",
+    "express": "^5.3.0",
+    "jsonwebtoken": "^9.0.3",
+    "prisma": "^6.19.3"
   },
   "keywords": [
     "smart-goals",
@@ -18,7 +29,8 @@
     "prisma",
     "react",
     "vite",
-    "recharts"
+    "recharts",
+    "vercel"
   ],
   "author": "",
   "license": "ISC"
