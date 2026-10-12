@@ -38,8 +38,29 @@ import {
 export default function AdminPortal() {
   const { user } = useAuth();
 
-  // Active Tab: 'analytics' | 'attempts' | 'tests' | 'questions'
-  const [activeTab, setActiveTab] = useState('analytics');
+  // Active Tab: persisted in localStorage so page refresh never resets your active view
+  const [activeTab, setActiveTabState] = useState(() => {
+    try {
+      return localStorage.getItem('admin_active_tab') || 'attempts';
+    } catch {
+      return 'attempts';
+    }
+  });
+
+  const setActiveTab = (tab) => {
+    setActiveTabState(tab);
+    try {
+      localStorage.setItem('admin_active_tab', tab);
+    } catch (_) {}
+  };
+
+  const getAuthHeaders = () => {
+    const token = localStorage.getItem('auth_token');
+    return {
+      'Content-Type': 'application/json',
+      ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    };
+  };
 
   // =====================================
   // 1. ANALYTICS STATE
@@ -48,9 +69,16 @@ export default function AdminPortal() {
   const [loadingAnalytics, setLoadingAnalytics] = useState(false);
 
   // =====================================
-  // 2. ATTEMPTS STATE
+  // 2. ATTEMPTS STATE (Persisted locally so old scores NEVER disappear on refresh)
   // =====================================
-  const [attempts, setAttempts] = useState([]);
+  const [attempts, setAttempts] = useState(() => {
+    try {
+      const cached = localStorage.getItem('smart_admin_cached_attempts');
+      return cached ? JSON.parse(cached) : [];
+    } catch {
+      return [];
+    }
+  });
   const [loadingAttempts, setLoadingAttempts] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
@@ -94,9 +122,10 @@ export default function AdminPortal() {
     ],
   });
 
-  // Load initial data
+  // Eagerly load all data on initial mount so scores, tests, and analytics are ready immediately
   useEffect(() => {
     loadAnalytics();
+    loadAttempts();
     loadTests();
   }, []);
 
@@ -107,6 +136,8 @@ export default function AdminPortal() {
       loadTests();
     } else if (activeTab === 'questions' && selectedTestForQuestions) {
       loadQuestions(selectedTestForQuestions);
+    } else if (activeTab === 'analytics') {
+      loadAnalytics();
     }
   }, [activeTab]);
 
@@ -124,7 +155,10 @@ export default function AdminPortal() {
   const loadAnalytics = async () => {
     try {
       setLoadingAnalytics(true);
-      const res = await fetch('/api/admin/analytics');
+      const res = await fetch('/api/admin/analytics', {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         const data = await res.json();
         setAnalytics(data);
@@ -144,10 +178,41 @@ export default function AdminPortal() {
       if (statusFilter !== 'all') params.append('status', statusFilter);
       if (sortBy) params.append('sortBy', sortBy);
 
-      const res = await fetch(`/api/admin/attempts?${params.toString()}`);
+      const res = await fetch(`/api/admin/attempts?${params.toString()}`, {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
+
       if (res.ok) {
         const data = await res.json();
-        setAttempts(data.attempts || []);
+        const serverAttempts = data.attempts || [];
+
+        // Read local cache to preserve any offline or historical submissions
+        let cached = [];
+        try {
+          const raw = localStorage.getItem('smart_admin_cached_attempts');
+          cached = raw ? JSON.parse(raw) : [];
+        } catch (_) {}
+
+        const mergedMap = new Map();
+        // Insert cached attempts first
+        cached.forEach((att) => {
+          const key = att.id || `${att.candidateUsn}_${att.startedAt}`;
+          mergedMap.set(key, att);
+        });
+        // Override/augment with server records
+        serverAttempts.forEach((att) => {
+          const key = att.id || `${att.candidateUsn}_${att.startedAt}`;
+          mergedMap.set(key, att);
+        });
+
+        const mergedList = Array.from(mergedMap.values());
+        mergedList.sort((a, b) => new Date(b.startedAt || 0) - new Date(a.startedAt || 0));
+
+        setAttempts(mergedList);
+        try {
+          localStorage.setItem('smart_admin_cached_attempts', JSON.stringify(mergedList));
+        } catch (_) {}
       }
     } catch (err) {
       console.error('Attempts load error:', err);
@@ -159,7 +224,10 @@ export default function AdminPortal() {
   const loadTests = async () => {
     try {
       setLoadingTests(true);
-      const res = await fetch('/api/admin/tests');
+      const res = await fetch('/api/admin/tests', {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         const data = await res.json();
         setTests(data.tests || []);
@@ -174,7 +242,10 @@ export default function AdminPortal() {
   const loadQuestions = async (testId) => {
     try {
       setLoadingQuestions(true);
-      const res = await fetch(`/api/admin/tests/${testId}/questions`);
+      const res = await fetch(`/api/admin/tests/${testId}/questions`, {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         const data = await res.json();
         setQuestions(data.questions || []);
@@ -189,10 +260,37 @@ export default function AdminPortal() {
   const viewAttemptDetail = async (attemptId) => {
     try {
       setLoadingDetail(true);
-      const res = await fetch(`/api/admin/attempts/${attemptId}`);
+      const res = await fetch(`/api/admin/attempts/${attemptId}`, {
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         const data = await res.json();
         setSelectedAttemptDetail(data.attempt);
+      } else {
+        const local = attempts.find((a) => a.id === attemptId);
+        if (local) {
+          setSelectedAttemptDetail({
+            id: local.id,
+            candidateName: local.candidateName,
+            candidateUsn: local.candidateUsn,
+            candidate: {
+              name: local.candidateName,
+              usn: local.candidateUsn,
+              email: local.candidateEmail || '—',
+            },
+            testTitle: local.testTitle,
+            testPassingScore: 70,
+            score: local.score,
+            totalQuestions: local.totalQuestions,
+            percentage: local.percentage,
+            passed: local.passed,
+            durationSeconds: local.durationSeconds,
+            startedAt: local.startedAt,
+            completedAt: local.completedAt,
+            answers: [],
+          });
+        }
       }
     } catch (err) {
       console.error('Detail load error:', err);
@@ -204,14 +302,22 @@ export default function AdminPortal() {
   const deleteAttempt = async (attemptId) => {
     if (!confirm('Are you sure you want to delete this candidate submission record?')) return;
     try {
-      const res = await fetch(`/api/admin/attempts/${attemptId}`, { method: 'DELETE' });
-      if (res.ok) {
-        setAttempts((prev) => prev.filter((a) => a.id !== attemptId));
-        if (selectedAttemptDetail?.id === attemptId) {
-          setSelectedAttemptDetail(null);
-        }
-        loadAnalytics();
+      await fetch(`/api/admin/attempts/${attemptId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
+      setAttempts((prev) => {
+        const filtered = prev.filter((a) => a.id !== attemptId);
+        try {
+          localStorage.setItem('smart_admin_cached_attempts', JSON.stringify(filtered));
+        } catch (_) {}
+        return filtered;
+      });
+      if (selectedAttemptDetail?.id === attemptId) {
+        setSelectedAttemptDetail(null);
       }
+      loadAnalytics();
     } catch (err) {
       console.error('Delete attempt error:', err);
     }
@@ -257,7 +363,8 @@ export default function AdminPortal() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: getAuthHeaders(),
         body: JSON.stringify(testFormData),
       });
 
@@ -276,7 +383,11 @@ export default function AdminPortal() {
   const handleDeleteTest = async (testId) => {
     if (!confirm('Delete this assessment and all of its questions and attempts?')) return;
     try {
-      const res = await fetch(`/api/admin/tests/${testId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/tests/${testId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         loadTests();
         if (selectedTestForQuestions === testId) {
@@ -354,7 +465,8 @@ export default function AdminPortal() {
 
       const res = await fetch(url, {
         method,
-        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        headers: getAuthHeaders(),
         body: JSON.stringify(questionFormData),
       });
 
@@ -374,7 +486,11 @@ export default function AdminPortal() {
   const handleDeleteQuestion = async (questionId) => {
     if (!confirm('Are you sure you want to delete this question?')) return;
     try {
-      const res = await fetch(`/api/admin/questions/${questionId}`, { method: 'DELETE' });
+      const res = await fetch(`/api/admin/questions/${questionId}`, {
+        method: 'DELETE',
+        credentials: 'include',
+        headers: getAuthHeaders(),
+      });
       if (res.ok) {
         loadQuestions(selectedTestForQuestions);
         loadTests();

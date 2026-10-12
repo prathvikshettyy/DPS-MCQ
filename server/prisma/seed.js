@@ -4,20 +4,14 @@ const bcrypt = require('bcryptjs');
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('Clearing existing database records...');
-  await prisma.answer.deleteMany();
-  await prisma.attempt.deleteMany();
-  await prisma.option.deleteMany();
-  await prisma.question.deleteMany();
-  await prisma.test.deleteMany();
-  await prisma.user.deleteMany();
-
-  console.log('Seeding users...');
+  console.log('Synchronizing admin users...');
   const adminPasswordHash = await bcrypt.hash('Admin@123', 10);
   const userPasswordHash = await bcrypt.hash('User@123', 10);
 
-  const admin = await prisma.user.create({
-    data: {
+  const admin = await prisma.user.upsert({
+    where: { email: 'admin@example.com' },
+    update: { passwordHash: adminPasswordHash, role: 'ADMIN' },
+    create: {
       email: 'admin@example.com',
       passwordHash: adminPasswordHash,
       name: 'System Administrator',
@@ -25,8 +19,10 @@ async function main() {
     },
   });
 
-  const demoUser = await prisma.user.create({
-    data: {
+  const demoUser = await prisma.user.upsert({
+    where: { email: 'user@example.com' },
+    update: { passwordHash: userPasswordHash },
+    create: {
       email: 'user@example.com',
       passwordHash: userPasswordHash,
       name: 'Alex Johnson',
@@ -34,16 +30,19 @@ async function main() {
     },
   });
 
-  console.log('Seeding default SMART test...');
-  const test = await prisma.test.create({
-    data: {
-      title: 'SMART Goals Quiz — 25 MCQs',
-      description: 'A 25-question assessment evaluating practical competence across all five SMART dimensions: Specific, Measurable, Achievable, Relevant, and Time-bound.',
-      timeLimitMinutes: 15,
-      passingScorePercent: 70,
-      isPublished: true,
-    },
-  });
+  console.log('Ensuring default SMART test...');
+  let test = await prisma.test.findFirst();
+  if (!test) {
+    test = await prisma.test.create({
+      data: {
+        title: 'SMART Goals Quiz — 25 MCQs',
+        description: 'A 25-question assessment evaluating practical competence across all five SMART dimensions: Specific, Measurable, Achievable, Relevant, and Time-bound.',
+        timeLimitMinutes: 15,
+        passingScorePercent: 70,
+        isPublished: true,
+      },
+    });
+  }
 
   console.log('Seeding 25 SMART questions from SMART_Goals_Quiz_Short_Options.pdf...');
 
@@ -344,24 +343,28 @@ async function main() {
     },
   ];
 
-  for (const q of questionsData) {
-    await prisma.question.create({
-      data: {
-        testId: test.id,
-        category: q.category,
-        prompt: q.prompt,
-        explanation: q.explanation,
-        options: {
-          create: q.options.map((opt) => ({
-            text: opt.text,
-            isCorrect: opt.isCorrect,
-          })),
+  const existingQuestionsCount = await prisma.question.count({ where: { testId: test.id } });
+  if (existingQuestionsCount === 0) {
+    for (const q of questionsData) {
+      await prisma.question.create({
+        data: {
+          testId: test.id,
+          category: q.category,
+          prompt: q.prompt,
+          explanation: q.explanation,
+          options: {
+            create: q.options.map((opt) => ({
+              text: opt.text,
+              isCorrect: opt.isCorrect,
+            })),
+          },
         },
-      },
-    });
+      });
+    }
+    console.log('Seeded 25 questions successfully!');
+  } else {
+    console.log(`Test already has ${existingQuestionsCount} questions; preserved.`);
   }
-
-  console.log('Seeded 25 questions successfully!');
   console.log(`Admin user: ${admin.email}`);
   console.log(`Demo user: ${demoUser.email}`);
   console.log(`Test created: "${test.title}" (ID: ${test.id})`);

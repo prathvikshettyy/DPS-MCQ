@@ -154,6 +154,33 @@ export default function TakeTest() {
         throw new Error(data.error || 'Failed to submit test.');
       }
 
+      // Cache submission locally so it permanently persists across all browser refreshes
+      try {
+        const raw = localStorage.getItem('smart_admin_cached_attempts');
+        const list = raw ? JSON.parse(raw) : [];
+        const newSubmission = {
+          id: attemptId,
+          candidateName: studentName,
+          candidateUsn: studentUsn,
+          candidateEmail: '—',
+          testId: testId,
+          testTitle: test?.title || 'SMART Goals Quiz — 25 MCQs',
+          score: data.score,
+          totalQuestions: data.totalQuestions,
+          percentage: data.percentage,
+          passed: data.passed,
+          durationSeconds: data.timeTakenSeconds || 0,
+          startedAt: new Date().toISOString(),
+          completedAt: new Date().toISOString(),
+          status: data.passed ? 'PASSED' : 'FAILED',
+        };
+        const exists = list.some((item) => item.id === attemptId);
+        if (!exists) {
+          list.unshift(newSubmission);
+          localStorage.setItem('smart_admin_cached_attempts', JSON.stringify(list));
+        }
+      } catch (_) {}
+
       navigate(`/result/${attemptId}`, {
         state: {
           resultData: data,
