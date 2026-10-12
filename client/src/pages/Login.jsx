@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
-import { Target, Lock, Mail, ArrowRight, ShieldCheck, UserCheck, AlertCircle } from 'lucide-react';
+import { Target, Lock, Mail, ArrowRight, AlertCircle } from 'lucide-react';
 
 export default function Login() {
   const { login } = useAuth();
@@ -31,16 +31,6 @@ export default function Login() {
     } finally {
       setLoading(false);
     }
-  };
-
-  const autofillAdmin = () => {
-    setEmail('admin@example.com');
-    setPassword('Admin@123');
-  };
-
-  const autofillUser = () => {
-    setEmail('user@example.com');
-    setPassword('User@123');
   };
 
   return (
@@ -113,38 +103,6 @@ export default function Login() {
               <ArrowRight className="w-4 h-4" />
             </button>
           </form>
-
-          {/* Demo Quick Fill Buttons */}
-          <div className="mt-6 pt-6 border-t border-slate-800">
-            <div className="text-[11px] font-semibold tracking-wider uppercase text-slate-400 text-center mb-3">
-              Quick Demo Accounts
-            </div>
-            <div className="grid grid-cols-2 gap-2">
-              <button
-                type="button"
-                onClick={autofillAdmin}
-                className="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-amber-500/40 text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5 text-amber-400 font-semibold text-xs">
-                  <ShieldCheck className="w-3.5 h-3.5" />
-                  Admin
-                </div>
-                <div className="text-[11px] text-slate-400 mt-0.5 truncate">admin@example.com</div>
-              </button>
-
-              <button
-                type="button"
-                onClick={autofillUser}
-                className="p-2.5 rounded-xl bg-slate-800/60 hover:bg-slate-800 border border-slate-700/60 hover:border-indigo-500/40 text-left transition-all group"
-              >
-                <div className="flex items-center gap-1.5 text-indigo-400 font-semibold text-xs">
-                  <UserCheck className="w-3.5 h-3.5" />
-                  Candidate
-                </div>
-                <div className="text-[11px] text-slate-400 mt-0.5 truncate">user@example.com</div>
-              </button>
-            </div>
-          </div>
 
           <div className="mt-6 text-center text-xs text-slate-400">
             Don't have an account yet?{' '}

@@ -32,7 +32,7 @@ A full-stack, enterprise-grade SMART Goals (Specific, Measurable, Achievable, Re
 
 2. **Admin Portal Flow**:
    - Access via the **Admin Portal** button in the navbar.
-   - Login using `admin@example.com` / `Admin@123` (or the 1-click **Admin** demo autofill button).
+   - Login using `admin@example.com` / `Admin@123`.
    - Real-time Submissions table showing:
      - **USN**
      - **Student Name**
