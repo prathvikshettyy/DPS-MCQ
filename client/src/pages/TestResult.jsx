@@ -92,15 +92,14 @@ export default function TestResult() {
 
   return (
     <div className="max-w-4xl mx-auto px-3 sm:px-6 py-5 sm:py-10">
-      
+
       {/* Hero Result Card */}
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl sm:rounded-3xl p-5 sm:p-10 mb-6 sm:mb-8 shadow-2xl relative overflow-hidden backdrop-blur-xl text-center">
-        
+
         {/* Subtle Glow */}
         <div
-          className={`absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl pointer-events-none ${
-            result.passed ? 'bg-emerald-500/10' : 'bg-rose-500/10'
-          }`}
+          className={`absolute top-0 left-1/2 -translate-x-1/2 w-64 h-64 rounded-full blur-3xl pointer-events-none ${result.passed ? 'bg-emerald-500/10' : 'bg-rose-500/10'
+            }`}
         />
 
         <div className="relative z-10 max-w-xl mx-auto">
@@ -225,9 +224,8 @@ export default function TestResult() {
                         {letter}
                       </span>
                       <span
-                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${
-                          isStrong ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
-                        }`}
+                        className={`text-[10px] font-bold px-1.5 py-0.5 rounded ${isStrong ? 'bg-emerald-500/10 text-emerald-400' : 'bg-amber-500/10 text-amber-400'
+                          }`}
                       >
                         {pct}%
                       </span>
@@ -266,11 +264,10 @@ export default function TestResult() {
               <button
                 key={cat}
                 onClick={() => setFilterCategory(cat)}
-                className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all ${
-                  filterCategory === cat
+                className={`px-2.5 py-1 rounded-lg text-xs font-semibold shrink-0 transition-all ${filterCategory === cat
                     ? 'bg-indigo-600 text-white'
                     : 'bg-slate-800 text-slate-400 hover:text-white'
-                }`}
+                  }`}
               >
                 {cat === 'ALL' ? 'All' : cat}
               </button>
@@ -286,11 +283,10 @@ export default function TestResult() {
             return (
               <div
                 key={item.questionId || idx}
-                className={`p-3.5 sm:p-5 rounded-xl border ${
-                  isCorrect
+                className={`p-3.5 sm:p-5 rounded-xl border ${isCorrect
                     ? 'bg-slate-800/20 border-slate-800'
                     : 'bg-rose-500/5 border-rose-500/20'
-                }`}
+                  }`}
               >
                 <div className="flex items-center justify-between gap-2 mb-2">
                   <div className="flex items-center gap-1.5">
@@ -303,11 +299,10 @@ export default function TestResult() {
                   </div>
 
                   <span
-                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
-                      isCorrect
+                    className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${isCorrect
                         ? 'bg-emerald-500/10 text-emerald-400'
                         : 'bg-rose-500/10 text-rose-400'
-                    }`}
+                      }`}
                   >
                     {isCorrect ? (
                       <>

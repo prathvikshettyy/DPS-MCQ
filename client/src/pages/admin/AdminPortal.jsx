@@ -51,7 +51,7 @@ export default function AdminPortal() {
     setActiveTabState(tab);
     try {
       localStorage.setItem('admin_active_tab', tab);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const getAuthHeaders = () => {
@@ -192,7 +192,7 @@ export default function AdminPortal() {
         try {
           const raw = localStorage.getItem('smart_admin_cached_attempts');
           cached = raw ? JSON.parse(raw) : [];
-        } catch (_) {}
+        } catch (_) { }
 
         const mergedMap = new Map();
         // Insert cached attempts first
@@ -212,7 +212,7 @@ export default function AdminPortal() {
         setAttempts(mergedList);
         try {
           localStorage.setItem('smart_admin_cached_attempts', JSON.stringify(mergedList));
-        } catch (_) {}
+        } catch (_) { }
       }
     } catch (err) {
       console.error('Attempts load error:', err);
@@ -311,7 +311,7 @@ export default function AdminPortal() {
         const filtered = prev.filter((a) => a.id !== attemptId);
         try {
           localStorage.setItem('smart_admin_cached_attempts', JSON.stringify(filtered));
-        } catch (_) {}
+        } catch (_) { }
         return filtered;
       });
       if (selectedAttemptDetail?.id === attemptId) {
@@ -518,7 +518,7 @@ export default function AdminPortal() {
 
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-      
+
       {/* Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
         <div>
@@ -557,11 +557,10 @@ export default function AdminPortal() {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap ${
-                isActive
+              className={`px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all flex items-center gap-2 whitespace-nowrap ${isActive
                   ? 'bg-indigo-600 text-white shadow-md shadow-indigo-600/25'
                   : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-              }`}
+                }`}
             >
               <Icon className="w-4 h-4" />
               {tab.label}
@@ -624,7 +623,7 @@ export default function AdminPortal() {
 
           {/* Charts Row */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            
+
             {/* SMART Pillars Accuracy Bar Chart */}
             <div className="p-6 sm:p-8 rounded-3xl bg-slate-900/90 border border-slate-800 shadow-xl">
               <div className="mb-6">
@@ -860,11 +859,11 @@ export default function AdminPortal() {
                     const durationSec = (att.durationSeconds || 0) % 60;
                     const dateStr = att.completedAt
                       ? new Date(att.completedAt).toLocaleDateString(undefined, {
-                          month: 'short',
-                          day: 'numeric',
-                          hour: '2-digit',
-                          minute: '2-digit',
-                        })
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                      })
                       : 'Active';
 
                     return (
@@ -947,11 +946,11 @@ export default function AdminPortal() {
                         const durationSec = (att.durationSeconds || 0) % 60;
                         const dateStr = att.completedAt
                           ? new Date(att.completedAt).toLocaleDateString(undefined, {
-                              month: 'short',
-                              day: 'numeric',
-                              hour: '2-digit',
-                              minute: '2-digit',
-                            })
+                            month: 'short',
+                            day: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                          })
                           : 'Active';
 
                         return (
@@ -1060,11 +1059,10 @@ export default function AdminPortal() {
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <span
-                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${
-                        test.isPublished
+                      className={`px-2.5 py-0.5 rounded-full text-xs font-semibold ${test.isPublished
                           ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
                           : 'bg-slate-800 text-slate-400'
-                      }`}
+                        }`}
                     >
                       {test.isPublished ? 'Published' : 'Draft / Unpublished'}
                     </span>
@@ -1158,11 +1156,10 @@ export default function AdminPortal() {
                   <button
                     key={cat}
                     onClick={() => setQuestionCategoryFilter(cat)}
-                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${
-                      questionCategoryFilter === cat
+                    className={`px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${questionCategoryFilter === cat
                         ? 'bg-indigo-600 text-white'
                         : 'bg-slate-800 text-slate-400 hover:text-white'
-                    }`}
+                      }`}
                   >
                     {cat}
                   </button>
@@ -1235,11 +1232,10 @@ export default function AdminPortal() {
                       {q.options.map((opt, optIdx) => (
                         <div
                           key={opt.id || optIdx}
-                          className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${
-                            opt.isCorrect
+                          className={`p-3 rounded-xl border text-xs flex items-start gap-2.5 ${opt.isCorrect
                               ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-300 font-medium'
                               : 'bg-slate-800/40 border-slate-700/60 text-slate-300'
-                          }`}
+                            }`}
                         >
                           <span className="w-5 h-5 rounded-md bg-slate-800 flex items-center justify-center font-bold shrink-0">
                             {String.fromCharCode(65 + optIdx)}
@@ -1273,7 +1269,7 @@ export default function AdminPortal() {
       {selectedAttemptDetail && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4 overflow-y-auto">
           <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-4xl w-full my-8 shadow-2xl relative max-h-[90vh] overflow-y-auto">
-            
+
             <div className="flex items-center justify-between pb-6 border-b border-slate-800 mb-6">
               <div>
                 <span className="text-xs font-bold uppercase tracking-wider text-indigo-400">
@@ -1315,9 +1311,8 @@ export default function AdminPortal() {
               <div className="p-4 rounded-xl bg-slate-800/50 border border-slate-700/60">
                 <div className="text-xs text-slate-400">Status</div>
                 <div
-                  className={`text-sm font-bold mt-1 ${
-                    selectedAttemptDetail.passed ? 'text-emerald-400' : 'text-rose-400'
-                  }`}
+                  className={`text-sm font-bold mt-1 ${selectedAttemptDetail.passed ? 'text-emerald-400' : 'text-rose-400'
+                    }`}
                 >
                   {selectedAttemptDetail.passed ? 'PASSED' : 'NEEDS IMPROVEMENT'}
                 </div>
@@ -1339,22 +1334,20 @@ export default function AdminPortal() {
               {selectedAttemptDetail.answers?.map((ans, idx) => (
                 <div
                   key={ans.questionId || idx}
-                  className={`p-4 rounded-xl border ${
-                    ans.isCorrect
+                  className={`p-4 rounded-xl border ${ans.isCorrect
                       ? 'bg-slate-800/20 border-slate-800'
                       : 'bg-rose-500/5 border-rose-500/20'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center justify-between gap-3 mb-2">
                     <span className="text-xs font-semibold text-slate-400">
                       Q #{idx + 1} &bull; Dimension: {categoryNames[ans.category] || ans.category}
                     </span>
                     <span
-                      className={`text-xs font-bold px-2 py-0.5 rounded-full ${
-                        ans.isCorrect
+                      className={`text-xs font-bold px-2 py-0.5 rounded-full ${ans.isCorrect
                           ? 'bg-emerald-500/10 text-emerald-400'
                           : 'bg-rose-500/10 text-rose-400'
-                      }`}
+                        }`}
                     >
                       {ans.isCorrect ? 'Correct' : 'Incorrect'}
                     </span>
